@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">CameraDemo</string>
+    <string name="cancel">Cancel</string>
+    <string name="choose">Choose</string>
+    <string name="loading">Loading..</string>
+    <string name="camera">Camera</string>
+    <string name="gallery">Gallery</string>
+    <string name="image_content_type">image/*</string>
+    <string name="wrong_authority">FileProvider not declared or has wrong authority.</string>
+    <string name="provider_package">.com.examples.camerademo.provider</string>
 </resources>

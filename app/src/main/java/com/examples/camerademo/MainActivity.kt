@@ -7,7 +7,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(),IPickResult {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -31,6 +31,29 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun cameraClicked() {
-        Toast.makeText(this, "Camera Clicked", Toast.LENGTH_SHORT).show()
+        PickImageDialog.build().show(this)
     }
+
+    override fun onPickResult(r: PickResult?)  {
+        if (r?.error == null) {
+            //If you want the Uri.
+            //Mandatory to refresh image from Uri.
+            //getImageView().setImageURI(null);
+
+            //Setting the real returned image.
+            //getImageView().setImageURI(r.getUri());
+
+            //If you want the Bitmap.
+//            getImageView().setImageBitmap(r.bitmap)
+
+            //r.getPath();
+        } else {
+            //Handle possible errors
+            //TODO: do what you have to do with r.getError();
+            Toast.makeText(this, r.error?.message, Toast.LENGTH_LONG).show()
+        }
+//        scrollToTop()
+    }
+
+
 }
