@@ -57,7 +57,7 @@ class MainActivity : AppCompatActivity(), IPickResult {
         var h = options.outHeight
         var scale = 1
         while (true) {
-            if (w / 2 < cardView.width || h / 2 < cardView.height) break
+            if (w / 2 < result_image.width || h / 2 < result_image.height) break
             w /= 2
             h /= 2
             scale *= 2
