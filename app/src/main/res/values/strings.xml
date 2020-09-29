@@ -8,4 +8,5 @@
     <string name="image_content_type">image/*</string>
     <string name="wrong_authority">FileProvider not declared or has wrong authority.</string>
     <string name="provider_package">.com.examples.camerademo.provider</string>
+    <string name="tip">Press on the box below to pick an image!</string>
 </resources>
