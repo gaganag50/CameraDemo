@@ -1,10 +1,9 @@
 package com.examples.camerademo
 
-import android.graphics.Bitmap
 import android.net.Uri
 
 class PickResult {
-    var bitmap: Bitmap? = null
+
     var uri: Uri? = null
         private set
     var path: String? = null

@@ -4,9 +4,12 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.database.Cursor
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -15,15 +18,11 @@ import android.view.Window
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.cardview.widget.CardView
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
-import kotlinx.android.synthetic.main.dialog.*
 
-
-/**
- * Created by jrvansuita build 01/11/16.
- */
 class PickImageDialog : DialogFragment() {
     val DIALOG_FRAGMENT_TAG: String =
         PickImageDialog::class.java.simpleName
@@ -37,6 +36,7 @@ class PickImageDialog : DialogFragment() {
     private var tvGallery: TextView? = null
     private var tvCancel: TextView? = null
     private var tvProgress: TextView? = null
+    private var card: CardView? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -71,6 +71,8 @@ class PickImageDialog : DialogFragment() {
         tvGallery = v.findViewById<View>(R.id.gallery) as TextView
         tvCancel = v.findViewById<View>(R.id.cancel) as TextView
         tvProgress = v.findViewById<View>(R.id.loading_text) as TextView
+        card = v.findViewById<View>(R.id.card) as CardView
+
     }
 
     private fun onBindViewListeners() {
@@ -85,9 +87,9 @@ class PickImageDialog : DialogFragment() {
             dismiss()
         } else {
             if (view.id == R.id.camera) {
-                onCameraClick()
+                launchCamera()
             } else if (view.id == R.id.gallery) {
-                onGalleryClick()
+                launchGallery()
             }
         }
     }
@@ -96,31 +98,36 @@ class PickImageDialog : DialogFragment() {
         return show(fragmentActivity.supportFragmentManager)
     }
 
-    fun show(fragmentManager: FragmentManager?): PickImageDialog {
+    private fun show(fragmentManager: FragmentManager?): PickImageDialog {
         fragmentManager?.let { super.show(it, DIALOG_FRAGMENT_TAG) }
         return this
     }
 
-    fun onCameraClick() {
-        launchCamera()
-    }
 
-    fun onGalleryClick() {
-        launchGallery()
-    }
-
-
-
-
-    protected fun launchCamera() {
+    private fun launchCamera() {
         if (resolver!!.requestCameraPermissions(this)) {
             resolver!!.launchCamera(this)
         }
     }
 
-    protected fun launchGallery() {
+    private fun launchGallery() {
         if (resolver!!.requestGalleryPermissions(this)) {
             resolver!!.launchGallery(this)
+        }
+    }
+
+    private fun getGalleryPath(uri: Uri?): String? {
+        var cursor: Cursor? = null
+        return try {
+            val proj = arrayOf(MediaStore.Images.Media.DATA)
+            cursor = context!!.contentResolver.query(uri!!, proj, null, null, null)
+            val column_index = cursor!!.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+            cursor!!.moveToFirst()
+            cursor!!.getString(column_index)
+        } catch (e: Exception) {
+            uri?.getPath()
+        } finally {
+            cursor?.close()
         }
     }
 
@@ -128,12 +135,31 @@ class PickImageDialog : DialogFragment() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == IntentResolver.REQUESTER) {
             if (resultCode == Activity.RESULT_OK) {
-                Log.d("mainActivity", "onActivityResult: cameraClicked")
+
+                val fromCamera: Boolean = resolver!!.fromCamera(data)
+                val result = PickResult()
+                if (fromCamera) {
+                    val cameraUri = resolver!!.cameraUri()
+                    result.setUri(cameraUri)
+                    result.setPath(cameraUri?.path)
+
+                } else {
+                    val galleryUri = data!!.data
+                    result.setUri(galleryUri)
+                    result.setPath(getGalleryPath(galleryUri))
+
+                }
+                Log.d("mainActivity", "onActivityResult: ${result.path}")
+                onPickResult!!.onPickResult(result)
+                dismissAllowingStateLoss()
+
             } else {
                 dismissAllowingStateLoss()
             }
         }
     }
+
+
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -162,7 +188,6 @@ class PickImageDialog : DialogFragment() {
                 }
             } else {
                 dismissAllowingStateLoss()
-//                if (grantResults.size > 1) Keep.with(getActivity()).askedForPermission()
             }
         }
     }

@@ -8,7 +8,6 @@ import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
@@ -154,11 +153,19 @@ class IntentResolver(val activity: AppCompatActivity) {
     }
 
 
+    fun fromCamera(data: Intent?): Boolean {
+        return data == null || data.data == null || data.data.toString()
+            .contains(cameraFile().toString()) || data.data.toString()
+            .contains("to_be_replaced")
+    }
+
+    fun cameraUri(): Uri? {
+        return Uri.fromFile(cameraFile())
+    }
 
 
     companion object {
         const val REQUESTER = 99
-//        const val SAVE_FILE_PATH_TAG = "savePath"
     }
 
 
